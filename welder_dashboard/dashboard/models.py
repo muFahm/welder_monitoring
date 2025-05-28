@@ -1,13 +1,13 @@
 from django.db import models
 
 class SensorRecord(models.Model):
-    gx = models.IntegerField()
-    gy = models.IntegerField()
-    gz = models.IntegerField()
-    
     ax = models.FloatField()
     ay = models.FloatField()
     az = models.FloatField()
+    
+    gx = models.IntegerField()
+    gy = models.IntegerField()
+    gz = models.IntegerField()
     
     mx = models.FloatField()
     my = models.FloatField()

@@ -31,12 +31,12 @@ class DataConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def save_sensor_data(self, data, timestamp):
         SensorRecord.objects.create(
-            gx = data.get ("gx", 0),
-            gy = data.get ("gy", 0),
-            gz = data.get ("gz", 0),
             ax = data.get ("ax", 0.0),
             ay = data.get ("ay", 0.0),
             az = data.get ("az", 0.0),
+            gx = data.get ("gx", 0),
+            gy = data.get ("gy", 0),
+            gz = data.get ("gz", 0),
             mx = data.get ("mx", 0.0),
             my = data.get ("my", 0.0),
             mz = data.get ("mz", 0.0),
