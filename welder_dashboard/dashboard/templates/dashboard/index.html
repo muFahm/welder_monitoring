@@ -22,11 +22,18 @@
       padding: 4px 8px;
       text-align: center;
     }
+    .act-welding { background-color: #f8d7da; color: #721c24; }
+    .act-idle { background-color: #d1ecf1; color: #0c5460; }
+    .act-cutting { background-color: #d4edda; color: #155724; }
   </style>
 </head>
 <body>
-  <h1>Dashboard Sensor</h1>
+  <h1>Predicted Activity</h1>
+  <div id="activity-box" style="padding: 10px; font-size: 20px; font-weight: bold; background-color: #eee; border-radius: 5px; margin-bottom: 20px;">
+    Aktivitas: <span id="activity-label">-</span>
+  </div>
 
+  <h1>Dashboard Sensor</h1>
   <div id="charts">
     <div id="accel" style="width:100%; height:300px;"></div>
     <div id="gyro" style="width:100%; height:300px;"></div>
@@ -63,6 +70,29 @@
             console.error("Fetch data error:", error);
             return [];  // kosongkan biar tidak error lanjutan
         }
+    }
+
+    async function fetchPrediction() {
+    try {
+        const response = await fetch('/api/predict-activity/');
+        const result = await response.json();
+        return result.activity || "-";
+    } catch (e) {
+        console.error("Fetch prediction error:", e);
+        return "-";
+    }
+}
+
+    function updateActivityBox(label) {
+        const labelSpan = document.getElementById("activity-label");
+        labelSpan.textContent = label;
+
+        // Tambah class warna berdasarkan jenis aktivitas (opsional)
+        const box = document.getElementById("activity-box");
+        box.className = "";  // reset
+        if (label.toLowerCase().includes("weld")) box.classList.add("act-welding");
+        else if (label.toLowerCase().includes("idle")) box.classList.add("act-idle");
+        else if (label.toLowerCase().includes("cut")) box.classList.add("act-cutting");
     }
 
     function buildChart(containerId, dataX, dataY, title) {
@@ -125,6 +155,10 @@
       // Optionally: auto-refresh per 1s
       setInterval(async () => {
         const updated = await fetchData();
+        const prediction = await fetchPrediction();  // ambil prediksi
+
+        updateActivityBox(prediction);
+        
         const x = updated.map(d => new Date(d.timestamp).getTime() / 1000);
         const accel = [
           updated.map(d => d.ax),
