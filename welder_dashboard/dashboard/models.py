@@ -26,8 +26,18 @@ class SensorRecord(models.Model):
 
 class WelderProfile(models.Model):
     name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True)
+    
     certification_id = models.CharField(max_length=100, unique=True)
-    experience_years = models.IntegerField()
+    certification_body = models.CharField(max_length=100, blank=True, help_text="Lembaga penerbit sertifikasi")
+    certification_expiry = models.DateField(null=True, blank=True)
+
+    experience_years = models.IntegerField(default=0)
+    skills = models.TextField(blank=True, help_text="Jenis pengelasan yang dikuasai, misal: SMAW, TIG, MIG")
+
+    profile_photo = models.ImageField(upload_to='welder_photos/', null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
