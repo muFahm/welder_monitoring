@@ -42,13 +42,16 @@ class StartSessionAPIView(APIView):
 
 class StopSessionAPIView(APIView):
     def post(self, request):
-        welder_id = request.data.get('welder_id')
-        if welder_id is None or int(welder_id) not in active_sessions:
+        session_id = request.data.get('session_id')
+        try:
+            session = WeldingSession.objects.get(id=session_id, end_time__isnull=True)
+        except WeldingSession.DoesNotExist:
             return Response({"error": "No active session"}, status=400)
 
-        session = active_sessions.pop(int(welder_id))
         session.end_time = now()
         session.save()
+        if session.welder.id in active_sessions:
+            active_sessions.pop(session.welder.id)
         return Response({"message": "Session stopped"})
     
 class ActivityStatsAPIView(APIView):
