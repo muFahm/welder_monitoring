@@ -1,0 +1,384 @@
+/* style1.css - Welder Dashboard Styling */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+.dashboard-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  min-height: 100vh;
+  max-width: 75vw; /* 3/4 dari lebar layar */
+  margin: 0 auto;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Left Column - Welder Profile (Sticky Sidebar) */
+.left-column {
+  position: fixed;
+  left: calc((100vw - 75vw) / 2); /* Centered positioning */
+  top: 20px;
+  width: 300px;
+  height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.welder-profile-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* Removed border */
+  height: 100%;
+}
+
+.welder-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+#welder-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ddd;
+}
+
+.welder-info h2 {
+  font-size: 1.4em;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.welder-info p {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.welder-details {
+  font-size: 0.9em;
+  line-height: 1.8;
+}
+
+.welder-details p {
+  margin-bottom: 8px;
+}
+
+.welder-details strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Right Column */
+.right-column {
+  margin-left: 320px; /* Account for fixed sidebar */
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Left stack narrow, right activity distribution wider */
+  grid-template-rows: auto auto auto auto; /* 4 rows total */
+  gap: 20px;
+  grid-template-areas:
+    "left-stack activity-dist"
+    "timeline timeline"
+    "sensors sensors"
+    "sensors sensors";
+}
+
+/* Left Stack - Current Time and Latest Activity */
+.left-stack {
+  grid-area: left-stack;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Activity Distribution spanning full height of left stack */
+.activity-distribution-card {
+  grid-area: activity-dist;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Timeline spanning full width */
+.timeline-card {
+  grid-area: timeline;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Sensors area */
+.sensors-area {
+  grid-area: sensors;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+/* Top Row - Current Time and Latest Activity - REMOVED, using left-stack now */
+
+.current-time-card, .latest-activity-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* Removed border */
+  text-align: center;
+}
+
+.current-time-card h2, .latest-activity-card h2 {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+  color: #555;
+}
+
+#dashboard-clock {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #333;
+}
+
+#activity-label {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+/* Activity Distribution Card */
+.activity-distribution-card h2 {
+  font-size: 1.2em;
+  margin-bottom: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+#activity-pie {
+  flex: 1;
+  max-height: none;
+  margin: 0 auto;
+}
+
+/* Timeline Card */
+.timeline-card h2 {
+  font-size: 1.2em;
+  margin-bottom: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+#activity-timeline {
+  display: flex;
+  width: 100%;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+#activity-timeline span {
+  display: block;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+#activity-timeline span:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/* Individual Sensor Cards */
+.sensor-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* Removed border */
+}
+
+.sensor-card h2 {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.sensor-chart {
+  margin-bottom: 8px;
+}
+
+.sensor-values {
+  font-size: 0.85em;
+  color: #666;
+  font-family: 'Courier New', monospace;
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.sensor-values span {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Deprecated - keeping for reference but using individual sensor cards now */
+.sensor-dashboard {
+  display: none; /* Hide the old combined sensor dashboard */
+}
+
+.sensor-section {
+  margin-bottom: 32px;
+}
+
+.sensor-section:last-child {
+  margin-bottom: 0;
+}
+
+.sensor-section h2 {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-container {
+    max-width: 85vw; /* Slightly wider on smaller screens */
+    padding: 15px;
+  }
+  
+  .left-column {
+    left: calc((100vw - 85vw) / 2);
+    top: 15px;
+    width: 280px;
+  }
+  
+  .right-column {
+    margin-left: 300px;
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-container {
+    max-width: 100vw;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  /* Reset sidebar to normal flow on mobile */
+  .left-column {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: auto;
+    order: 1; /* Welder profile at top on mobile */
+  }
+  
+  .right-column {
+    margin-left: 0;
+    order: 2;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left-stack"
+      "activity-dist"
+      "timeline"
+      "sensors";
+  }
+  
+  .sensors-area {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 10px;
+  }
+  
+  .welder-profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  #welder-photo {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Chart Containers */
+canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* Animation for cards */
+.welder-profile-card,
+.current-time-card,
+.latest-activity-card,
+.activity-distribution-card,
+.timeline-card,
+.sensor-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.welder-profile-card:hover,
+.current-time-card:hover,
+.latest-activity-card:hover,
+.activity-distribution-card:hover,
+.timeline-card:hover,
+.sensor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Scrollbar Styling for Left Column */
+.left-column::-webkit-scrollbar {
+  width: 8px;
+}
+
+.left-column::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.left-column::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.left-column::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
