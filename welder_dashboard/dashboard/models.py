@@ -26,24 +26,24 @@ class SensorRecord(models.Model):
 
 class WelderProfile(models.Model):
     name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True)
+    
     certification_id = models.CharField(max_length=100, unique=True)
-    experience_years = models.IntegerField()
+    certification_body = models.CharField(max_length=100, blank=True, help_text="Lembaga penerbit sertifikasi")
+    certification_expiry = models.DateField(null=True, blank=True)
+
+    experience_years = models.IntegerField(default=0)
+    skills = models.TextField(blank=True, help_text="Jenis pengelasan yang dikuasai, misal: SMAW, TIG, MIG")
+
+    profile_photo = models.ImageField(upload_to='welder_photos/', null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} - {self.certification_id}"
 
-class WeldingSession(models.Model):
-    welder = models.ForeignKey(WelderProfile, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
-    description = models.TextField(blank=True)
-    
-    def __str__(self):
-        return f"Session {self.id} by {self.welder.name} on {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}"
-
 class PredictionResult(models.Model):
-    session = models.ForeignKey(WeldingSession, on_delete=models.CASCADE)
     predicted_class = models.CharField(max_length=100)  # misal: "arc_start", "steady_weld"
     confidence = models.FloatField()
     window_start = models.DateTimeField()

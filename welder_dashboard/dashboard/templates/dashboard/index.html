@@ -1,192 +1,90 @@
-<!-- templates/dashboard.html -->
-<html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Welder Sensor Dashboard</title>
-  <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css">
-  <style>
-    #table-container {
-      height: 300px;
-      overflow-y: scroll;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    thead th {
-      position: sticky;
-      top: 0;
-      background: #fff;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 4px 8px;
-      text-align: center;
-    }
-    .act-welding { background-color: #f8d7da; color: #721c24; }
-    .act-idle { background-color: #d1ecf1; color: #0c5460; }
-    .act-cutting { background-color: #d4edda; color: #155724; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Welder Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-  <h1>Predicted Activity</h1>
-  <div id="activity-box" style="padding: 10px; font-size: 20px; font-weight: bold; background-color: #eee; border-radius: 5px; margin-bottom: 20px;">
-    Aktivitas: <span id="activity-label">-</span>
+<body class="bg-gray-100 text-gray-900">
+
+  <div class="grid grid-cols-12 gap-4 p-6">
+    <!-- Left Column -->
+    <div class="col-span-4 space-y-6">
+      <!-- Welder Profile -->
+      <div class="bg-white shadow rounded-2xl p-4">
+        <div class="flex items-center space-x-4">
+          <img id="welder-photo" src="{% static 'images/ahmad-fauzi.jpg' %}" 
+              class="w-20 h-20 rounded-full object-cover" alt="Welder Photo">
+          <div>
+            <h2 id="welder-name" class="text-xl font-bold">Welder Name</h2>
+            <p id="welder-email" class="text-sm text-gray-500">email@example.com</p>
+            <p id="welder-phone" class="text-sm text-gray-500">+62-xxx</p>
+          </div>
+        </div>
+        <div class="mt-3 text-sm">
+          <p><strong>Skills:</strong> <span id="welder-skills"></span></p>
+          <p><strong>Experience:</strong> <span id="welder-experience"></span></p>
+          <p><strong>Certification:</strong> 
+            <span id="welder-cert-id"></span> (<span id="welder-cert-body"></span>)</p>
+          <p><strong>Expiry:</strong> <span id="welder-cert-expiry"></span></p>
+        </div>
+      </div>
+
+      <!-- Clock -->
+      <div class="bg-white shadow rounded-2xl p-4 text-center">
+        <h2 class="text-2xl font-bold">Current Time</h2>
+        <p id="dashboard-clock" class="text-lg mt-2 text-gray-700"></p>
+      </div>
+
+      <!-- Latest Activity -->
+      <div class="bg-white shadow rounded-2xl p-4 text-center">
+        <h2 class="text-lg font-semibold text-gray-600">Latest Activity</h2>
+        <p id="activity-label" class="text-2xl font-bold text-indigo-600 mt-2">-</p>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-span-8 space-y-6">
+      <!-- Row 1: Pie + Timeline -->
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Activity Pie -->
+        <div class="bg-white shadow rounded-2xl p-4">
+          <h2 class="text-lg font-semibold mb-2">Activity Distribution</h2>
+          <canvas id="activity-pie"></canvas>
+        </div>
+        <!-- Timeline -->
+        <div class="bg-white shadow rounded-2xl p-4">
+          <h2 class="text-lg font-semibold mb-2">Activity Timeline</h2>
+          <div id="activity-timeline" class="flex w-full h-6 rounded overflow-hidden"></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Sensor Dashboard -->
+      <div class="grid grid-cols-1 gap-4">
+        <div class="bg-white shadow rounded-2xl p-4">
+          <h2 class="text-lg font-semibold">Accelerometer</h2>
+          <canvas id="accel-chart"></canvas>
+          <p class="text-xs mt-2">X: <span id="accel-x"></span>, 
+            Y: <span id="accel-y"></span>, Z: <span id="accel-z"></span></p>
+        </div>
+        <div class="bg-white shadow rounded-2xl p-4">
+          <h2 class="text-lg font-semibold">Gyroscope</h2>
+          <canvas id="gyro-chart"></canvas>
+          <p class="text-xs mt-2">X: <span id="gyro-x"></span>, 
+            Y: <span id="gyro-y"></span>, Z: <span id="gyro-z"></span></p>
+        </div>
+        <div class="bg-white shadow rounded-2xl p-4">
+          <h2 class="text-lg font-semibold">Magnetometer</h2>
+          <canvas id="mag-chart"></canvas>
+          <p class="text-xs mt-2">X: <span id="mag-x"></span>, 
+            Y: <span id="mag-y"></span>, Z: <span id="mag-z"></span></p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <h1>Dashboard Sensor</h1>
-  <div id="charts">
-    <div id="accel" style="width:100%; height:300px;"></div>
-    <div id="gyro" style="width:100%; height:300px;"></div>
-    <div id="magneto" style="width:100%; height:300px;"></div>
-  </div>
-
-  <h2>Data Tabel</h2>
-  <div id="table-container">
-    <table id="data-table">
-      <thead>
-        <tr>
-          <th>Timestamp</th><th>ax</th><th>ay</th><th>az</th>
-          <th>gx</th><th>gy</th><th>gz</th>
-          <th>mx</th><th>my</th><th>mz</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
-  <script>
-    let chartAccel, chartGyro, chartMag;
-
-    async function fetchData() {
-        try {
-            const response = await fetch('/api/sensor-data/');
-            if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}`);
-            }
-            const data = await response.json();
-            return data.reverse(); // dari lama ke baru
-        } catch (error) {
-            console.error("Fetch data error:", error);
-            return [];  // kosongkan biar tidak error lanjutan
-        }
-    }
-
-    async function fetchPrediction() {
-    try {
-        const response = await fetch('/api/predict-activity/');
-        const result = await response.json();
-        return result.activity || "-";
-    } catch (e) {
-        console.error("Fetch prediction error:", e);
-        return "-";
-    }
-}
-
-    function updateActivityBox(label) {
-        const labelSpan = document.getElementById("activity-label");
-        labelSpan.textContent = label;
-
-        // Tambah class warna berdasarkan jenis aktivitas (opsional)
-        const box = document.getElementById("activity-box");
-        box.className = "";  // reset
-        if (label.toLowerCase().includes("weld")) box.classList.add("act-welding");
-        else if (label.toLowerCase().includes("idle")) box.classList.add("act-idle");
-        else if (label.toLowerCase().includes("cut")) box.classList.add("act-cutting");
-    }
-
-    function buildChart(containerId, dataX, dataY, title) {
-      return new uPlot({
-        title,
-        width: 800,
-        height: 250,
-        scales: { x: { time: true }, y: { auto: true } },
-        series: [
-          { label: "Time" },
-          { label: "X", stroke: "red" },
-          { label: "Y", stroke: "green" },
-          { label: "Z", stroke: "blue" }
-        ]
-      }, [dataX, ...dataY], document.getElementById(containerId));
-    }
-
-    function fillTable(data) {
-      const tbody = document.querySelector("#data-table tbody");
-      tbody.innerHTML = '';
-      for (let row of data) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${row.timestamp}</td>
-          <td>${row.ax}</td><td>${row.ay}</td><td>${row.az}</td>
-          <td>${row.gx}</td><td>${row.gy}</td><td>${row.gz}</td>
-          <td>${row.mx}</td><td>${row.my}</td><td>${row.mz}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-    }
-
-    async function init() {
-      const data = await fetchData();
-
-      // X-axis (timestamp in seconds)
-      const x = data.map(d => new Date(d.timestamp).getTime() / 1000);
-      const accel = [
-        data.map(d => d.ax),
-        data.map(d => d.ay),
-        data.map(d => d.az),
-      ];
-      const gyro = [
-        data.map(d => d.gx),
-        data.map(d => d.gy),
-        data.map(d => d.gz),
-      ];
-      const mag = [
-        data.map(d => d.mx),
-        data.map(d => d.my),
-        data.map(d => d.mz),
-      ];
-
-      chartAccel = buildChart("accel", x, accel, "Accelerometer");
-      chartGyro = buildChart("gyro", x, gyro, "Gyroscope");
-      chartMag = buildChart("magneto", x, mag, "Magnetometer");
-
-      fillTable(data);
-
-      // Optionally: auto-refresh per 1s
-      setInterval(async () => {
-        const updated = await fetchData();
-        const prediction = await fetchPrediction();  // ambil prediksi
-
-        updateActivityBox(prediction);
-        
-        const x = updated.map(d => new Date(d.timestamp).getTime() / 1000);
-        const accel = [
-          updated.map(d => d.ax),
-          updated.map(d => d.ay),
-          updated.map(d => d.az),
-        ];
-
-        const gyro = [
-          updated.map(d => d.gx),
-          updated.map(d => d.gy),
-          updated.map(d => d.gz),
-        ];
-
-        const mag = [
-          updated.map(d => d.mx),
-          updated.map(d => d.my),
-          updated.map(d => d.mz),
-        ];
-
-        chartAccel.setData([x, ...accel]);
-        chartGyro.setData([x, ...gyro]);
-        chartMag.setData([x, ...mag]);
-
-        fillTable(updated);
-      }, 1000);
-    }
-
-    init();
-  </script>
+  <script src="{% static 'js/dashboard.js' %}"></script>
 </body>
 </html>
