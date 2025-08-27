@@ -41,7 +41,7 @@ body {
 .welder-profile-card {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   /* Removed border */
   height: 100%;
@@ -49,43 +49,57 @@ body {
 
 .welder-profile-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
+  text-align: center;
 }
 
 #welder-photo {
-  width: 80px;
-  height: 80px;
+  width: 140px;
+  height:140px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #ddd;
 }
 
 .welder-info h2 {
-  font-size: 1.4em;
+  font-size: 1.6em;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
+  color: #1a1a1a;
 }
 
 .welder-info p {
-  font-size: 0.9em;
-  color: #666;
-  margin-bottom: 2px;
+  font-size: 1.1em;
+  color: #555;
+  margin-bottom: 6px;
 }
 
 .welder-details {
-  font-size: 0.9em;
+  font-size: 1em;
   line-height: 1.8;
 }
 
-.welder-details p {
-  margin-bottom: 8px;
+.welder-details .detail-item {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.welder-details strong {
-  color: #333;
-  font-weight: 600;
+.welder-details .detail-label {
+  font-weight: 500;
+  color: #666;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.95em;
+}
+
+.welder-details .detail-value {
+  color: #1a1a1a;
+  display: block;
+  font-weight: bold;
+  font-size: 1.15em;
 }
 
 /* Right Column */
@@ -94,13 +108,13 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 2fr; /* Left stack narrow, right activity distribution wider */
-  grid-template-rows: auto auto auto auto; /* 4 rows total */
+  grid-template-rows: minmax(300px, 400px) auto 1fr; /* Fixed height for top row, auto for timeline, flex for sensors */
   gap: 20px;
   grid-template-areas:
     "left-stack activity-dist"
     "timeline timeline"
-    "sensors sensors"
     "sensors sensors";
+  height: calc(100vh - 40px); /* Full viewport height minus padding */
 }
 
 /* Left Stack - Current Time and Latest Activity */
@@ -109,6 +123,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  height: 100%; /* Fill the grid row height */
+}
+
+.left-stack .current-time-card,
+.left-stack .latest-activity-card {
+  flex: 1; /* Each card takes equal space */
 }
 
 /* Activity Distribution spanning full height of left stack */
@@ -120,6 +140,7 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  height: 100%; /* Match left-stack height */
 }
 
 /* Timeline spanning full width */
@@ -137,6 +158,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
+  align-content: start;
 }
 
 /* Top Row - Current Time and Latest Activity - REMOVED, using left-stack now */
@@ -144,28 +166,29 @@ body {
 .current-time-card, .latest-activity-card {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   /* Removed border */
   text-align: center;
 }
 
 .current-time-card h2, .latest-activity-card h2 {
-  font-size: 1.1em;
-  margin-bottom: 12px;
-  color: #555;
+  font-size: 1em;
+  margin-bottom: 16px;
+  color: #666;
+  font-weight: 500;
 }
 
 #dashboard-clock {
-  font-size: 1.4em;
+  font-size: 2em;
   font-weight: bold;
-  color: #333;
+  color: #1a1a1a;
 }
 
 #activity-label {
-  font-size: 1.4em;
+  font-size: 1.8em;
   font-weight: bold;
-  color: #2563eb;
+  color: #1a1a1a;
 }
 
 /* Activity Distribution Card */
@@ -178,7 +201,8 @@ body {
 
 #activity-pie {
   flex: 1;
-  max-height: none;
+  max-height: 280px; /* Limit pie chart height */
+  max-width: 280px;
   margin: 0 auto;
 }
 
@@ -231,21 +255,24 @@ body {
 
 .sensor-chart {
   margin-bottom: 8px;
+  height: 200px; /* Fixed height for better proportion */
 }
 
 .sensor-values {
-  font-size: 0.85em;
-  color: #666;
-  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #1a1a1a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f8f9fa;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 6px;
   border: 1px solid #e9ecef;
+  text-align: center;
 }
 
 .sensor-values span {
   font-weight: bold;
-  color: #333;
+  color: #1a1a1a;
+  font-size: 1.1em;
 }
 
 /* Deprecated - keeping for reference but using individual sensor cards now */
@@ -309,16 +336,59 @@ body {
   .right-column {
     margin-left: 0;
     order: 2;
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "left-stack"
-      "activity-dist"
-      "timeline"
-      "sensors";
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%; /* Ensure full width */
+  }
+  
+  /* All boxes full width on mobile */
+  .left-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: auto;
+    width: 100%; /* Full width */
+  }
+  
+  .left-stack .current-time-card,
+  .left-stack .latest-activity-card {
+    flex: none;
+    width: 100%; /* Full width */
+  }
+  
+  .activity-distribution-card {
+    height: auto;
+    width: 100%; /* Full width */
+  }
+  
+  .timeline-card {
+    width: 100%; /* Full width */
   }
   
   .sensors-area {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%; /* Full width */
+  }
+  
+  /* All cards full width with margins like welder profile */
+  .current-time-card,
+  .latest-activity-card,
+  .activity-distribution-card,
+  .timeline-card,
+  .sensor-card {
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box; /* Ensure padding doesn't break layout */
+  }
+  
+  /* Adjust pie chart for mobile */
+  #activity-pie {
+    max-height: 250px;
+    max-width: 250px;
   }
 }
 
@@ -335,6 +405,25 @@ body {
   #welder-photo {
     width: 100px;
     height: 100px;
+  }
+  
+  /* Ensure all elements are full width on small screens */
+  .right-column,
+  .left-stack,
+  .current-time-card,
+  .latest-activity-card,
+  .activity-distribution-card,
+  .timeline-card,
+  .sensor-card,
+  .sensors-area {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  #activity-pie {
+    max-height: 200px;
+    max-width: 200px;
   }
 }
 
