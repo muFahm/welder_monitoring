@@ -59,7 +59,13 @@ class ActivityPredictionAPIView(APIView):
         welder_id = request.query_params.get("welder_id")  # ambil dari URL ?welder_id=1
         try:
             result = predict_latest_activity(welder_id=int(welder_id) if welder_id else None)
-            # harus return { "predicted_class": "...", "confidence": 0.xx }
+            if isinstance(result, str):
+                return Response({
+                    "predicted_class": result,
+                    "confidence": 1.0  # default kalau tidak ada skor
+                })
+
+            # kalau sudah dict dengan predicted_class & confidence
             return Response(result)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
