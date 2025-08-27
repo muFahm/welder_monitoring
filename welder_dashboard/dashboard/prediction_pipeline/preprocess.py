@@ -9,10 +9,10 @@ def get_latest_window_data():
     records = SensorRecord.objects.order_by('-timestamp')[:WINDOW_SIZE][::-1]
 
     if len(records) < WINDOW_SIZE:
-        return None  # Belum cukup data untuk diprediksi
+        return None, None  # Belum cukup data untuk diprediksi
 
     # Susun data menjadi array [window_size, 9]
     data = np.array([[r.ax, r.ay, r.az, r.gx, r.gy, r.gz, r.mx, r.my, r.mz] for r in records], dtype=np.float32)
 
     # Bentuk ke (1, window_size, 9) karena CNN expects batch
-    return data.reshape(1, WINDOW_SIZE, 9)
+    return data.reshape(1, WINDOW_SIZE, 9), records

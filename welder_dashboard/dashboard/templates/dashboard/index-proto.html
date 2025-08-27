@@ -1,0 +1,352 @@
+<!-- templates/dashboard.html -->
+<html>
+<head>
+  <title>Welder Sensor Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css">
+  <style>
+    #table-container {
+      height: 300px;
+      overflow-y: scroll;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      text-align: center;
+    }
+    .act-welding { background-color: #f8d7da; color: #721c24; }
+    .act-idle { background-color: #d1ecf1; color: #0c5460; }
+    .act-cutting { background-color: #d4edda; color: #155724; }
+    .act-welding { background-color: #f8d7da; color: #721c24; }
+    .act-idle { background-color: #d1ecf1; color: #0c5460; }
+    .act-cutting { background-color: #d4edda; color: #155724; }
+  </style>
+</head>
+
+<body>
+  <h1>Predicted Activity</h1>
+  <div id="activity-box" style="padding: 10px; font-size: 20px; font-weight: bold; background-color: #eee; border-radius: 5px; margin-bottom: 20px;">
+    Aktivitas: <span id="activity-label">-</span>
+  </div>
+
+  <button id="start-btn">Start Session</button>
+  <button id="stop-btn" disabled>Stop Session</button>
+
+  <h3>Aktivitas Pie Chart</h3>
+  <div id="pie-chart"></div>
+
+  <h3>Timeline Aktivitas</h3>
+  <div id="bar-timeline" style="display: flex; gap: 1px;"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <h1>Dashboard Sensor</h1>
+  <div id="charts">
+    <div id="accel" style="width:100%; height:300px;"></div>
+    <div id="gyro" style="width:100%; height:300px;"></div>
+    <div id="magneto" style="width:100%; height:300px;"></div>
+  </div>
+
+  <h2>Data Tabel</h2>
+  <div id="table-container">
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th><th>ax</th><th>ay</th><th>az</th>
+          <th>gx</th><th>gy</th><th>gz</th>
+          <th>mx</th><th>my</th><th>mz</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
+
+  <script>
+    // =======================
+    // 1. Variabel Global
+    // =======================
+    let activeSessionId = localStorage.getItem("active_session_id") || null;
+    const welderId = 1;
+
+    let chartAccel, chartGyro, chartMag;
+    let pieChart, barChart;
+
+    // =======================
+    // 2. Fungsi Helper
+    // =======================
+    function getActivityColor(label) {
+      switch (label.toLowerCase()) {
+        case "grinding": return "#f94144";
+        case "others": return "#f9844a";
+        case "preparation": return "#f9c74f";
+        case "slag cleaning": return "#43aa8b";
+        case "welding": return "#577590";
+        default: return "#adb5bd";
+      }
+    }
+
+    function buildChart(containerId, dataX, dataY, title) {
+      return new uPlot({
+        title,
+        width: 800,
+        height: 250,
+        scales: { x: { time: true }, y: { auto: true } },
+        series: [
+          { label: "Time" },
+          { label: "X", stroke: "red" },
+          { label: "Y", stroke: "green" },
+          { label: "Z", stroke: "blue" }
+        ]
+      }, [dataX, ...dataY], document.getElementById(containerId));
+    }
+
+    function updateActivityBox(label) {
+      const box = document.getElementById("activity-box");
+      const labelSpan = document.getElementById("activity-label");
+
+      labelSpan.textContent = label;
+      box.className = "";  // reset
+
+      if (label.toLowerCase().includes("weld")) box.classList.add("act-welding");
+      else if (label.toLowerCase().includes("idle")) box.classList.add("act-idle");
+      else if (label.toLowerCase().includes("cut")) box.classList.add("act-cutting");
+    }
+
+    function fillTable(data) {
+      const tbody = document.querySelector("#data-table tbody");
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.timestamp}</td>
+          <td>${row.ax}</td><td>${row.ay}</td><td>${row.az}</td>
+          <td>${row.gx}</td><td>${row.gy}</td><td>${row.gz}</td>
+          <td>${row.mx}</td><td>${row.my}</td><td>${row.mz}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // =======================
+    // 3. Fungsi Fetch API
+    // =======================
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/sensor-data/');
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        return (await response.json()).reverse();
+      } catch (error) {
+        console.error("Fetch data error:", error);
+        return [];
+      }
+    }
+
+    async function fetchPrediction() {
+      try {
+        const response = await fetch('/api/predict-activity/');
+        const result = await response.json();
+        return result.activity || "-";
+      } catch (e) {
+        console.error("Fetch prediction error:", e);
+        return "-";
+      }
+    }
+
+    async function fetchActivityStats() {
+      try {
+        const sessionId = localStorage.getItem("active_session_id");
+        if (!sessionId) {
+          console.warn("Tidak ada session_id di localStorage");
+          return null;
+        }
+
+        const res = await fetch(`/api/activity-stats/?session_id=${sessionId}`);
+        if (!res.ok) {
+          console.warn("Gagal fetch activity stats:", res.status);
+          return null;
+        }
+
+        return await res.json();
+      } catch (e) {
+        console.error("Failed to fetch stats:", e);
+        return null;
+      }
+    }
+
+    // =======================
+    // 4. Fungsi Update UI
+    // =======================
+    function updateCharts(stat) {
+      if (!stat || !stat.counts || !stat.sequence) return;
+      updatePieChart(stat.counts);
+      updateBarChart(stat.sequence);
+    }
+
+    function updatePieChart(counts) {
+      const container = document.getElementById("pie-chart");
+      container.innerHTML = '';
+
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
+
+      const ordered = ["preparation", "welding", "slag cleaning", "grinding", "others"];
+      const sortedData = ordered.map(label => ({
+        label: label,
+        value: counts[label] || 0
+      }));
+
+      sortedData.forEach(item => {
+        const slice = document.createElement("div");
+        slice.textContent = `${item.label}: ${item.value} (${((item.value / total) * 100).toFixed(1)}%)`;
+        container.appendChild(slice);
+      });
+    }
+
+    function updateBarChart(sequence) {
+      const container = document.getElementById("bar-timeline");
+      container.innerHTML = '';
+
+      sequence.forEach(item => {
+        const block = document.createElement("div");
+        block.style = `
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          margin-right: 2px;
+          background-color: ${getActivityColor(item.label)};
+        `;
+        block.title = `${item.label} (${(item.confidence * 100).toFixed(1)}%)`;
+        container.appendChild(block);
+      });
+    }
+
+    // =======================
+    // 5. Event Listeners
+    // =======================
+    document.getElementById("start-btn").addEventListener("click", async () => {
+      const res = await fetch("/api/start-session/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ welder_id: welderId })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        activeSessionId = data.session_id;
+        localStorage.setItem("active_session_id", activeSessionId);
+
+        document.getElementById("start-btn").disabled = true;
+        document.getElementById("stop-btn").disabled = false;
+        console.log("Session started:", activeSessionId);
+      } else {
+        alert("Gagal memulai sesi: " + data.error);
+      }
+    });
+
+    document.getElementById("stop-btn").addEventListener("click", async () => {
+      const res = await fetch("/api/stop-session/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ welder_id: welderId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        activeSessionId = null;
+        localStorage.removeItem("active_session_id");
+
+        document.getElementById("start-btn").disabled = false;
+        document.getElementById("stop-btn").disabled = true;
+        console.log("Session stopped");
+      } else {
+        alert("Gagal mengakhiri sesi: " + (data.error || "Unknown error"));
+        // Jika error karena session tidak aktif, hapus session id di localStorage
+        if (data.error && (data.error.includes("No active session") || data.error.includes("Welder not found"))) {
+          activeSessionId = null;
+          localStorage.removeItem("active_session_id");
+          document.getElementById("start-btn").disabled = false;
+          document.getElementById("stop-btn").disabled = true;
+        }
+      }
+    });
+
+    // =======================
+    // 6. Inisialisasi
+    // =======================
+    async function checkSessionStatus() {
+      if (!activeSessionId) return false;
+      // Cek ke backend apakah session masih aktif
+      const res = await fetch(`/api/activity-stats/?session_id=${activeSessionId}`);
+      if (!res.ok) {
+        // Session tidak valid/aktif, hapus dari localStorage
+        localStorage.removeItem("active_session_id");
+        activeSessionId = null;
+        return false;
+      }
+      return true;
+    }
+
+    async function init() {
+      const sessionActive = await checkSessionStatus();
+      document.getElementById("start-btn").disabled = sessionActive;
+      document.getElementById("stop-btn").disabled = !sessionActive;
+
+      const data = await fetchData();
+      const x = data.map(d => new Date(d.timestamp).getTime() / 1000);
+
+      const accel = [data.map(d => d.ax), data.map(d => d.ay), data.map(d => d.az)];
+      const gyro = [data.map(d => d.gx), data.map(d => d.gy), data.map(d => d.gz)];
+      const mag = [data.map(d => d.mx), data.map(d => d.my), data.map(d => d.mz)];
+
+      chartAccel = buildChart("accel", x, accel, "Accelerometer");
+      chartGyro = buildChart("gyro", x, gyro, "Gyroscope");
+      chartMag = buildChart("magneto", x, mag, "Magnetometer");
+
+      fillTable(data);
+
+      if (activeSessionId) {
+        const stat = await fetchActivityStats();
+        if (stat) updateCharts(stat);
+      }
+    }
+
+    // =======================
+    // 7. Interval Polling
+    // =======================
+    setInterval(async () => {
+      const updated = await fetchData();
+      const prediction = await fetchPrediction();
+      updateActivityBox(prediction);
+
+      const x = updated.map(d => new Date(d.timestamp).getTime() / 1000);
+      const accel = [updated.map(d => d.ax), updated.map(d => d.ay), updated.map(d => d.az)];
+      const gyro = [updated.map(d => d.gx), updated.map(d => d.gy), updated.map(d => d.gz)];
+      const mag = [updated.map(d => d.mx), updated.map(d => d.my), updated.map(d => d.mz)];
+
+      chartAccel.setData([x, ...accel]);
+      chartGyro.setData([x, ...gyro]);
+      chartMag.setData([x, ...mag]);
+      fillTable(updated);
+
+      if (activeSessionId) {
+        const stat = await fetchActivityStats();
+        if (stat) updateCharts(stat);
+      }
+    }, 1000);
+
+    // Jalankan init di awal
+    init();
+
+  </script>
+
+
+</body>
+</html>
