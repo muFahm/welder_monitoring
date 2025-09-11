@@ -1,53 +1,37 @@
 # Welder Monitoring Dashboard
 
-Sistem **Welder Monitoring Dashboard** adalah aplikasi berbasis web yang digunakan untuk memantau aktivitas, performa, dan profil welder (tukang las) secara real-time. Dashboard ini menampilkan data sensor, prediksi aktivitas, distribusi aktivitas, serta profil lengkap welder untuk mendukung pengawasan dan pengambilan keputusan di lingkungan kerja.
+Sistem **Welder Monitoring Dashboard** adalah aplikasi berbasis web untuk memantau aktivitas, performa, dan profil welder (tukang las) secara real-time. Dashboard ini menampilkan data sensor, prediksi aktivitas, distribusi aktivitas, serta profil lengkap welder untuk mendukung pengawasan dan pengambilan keputusan di lingkungan kerja.
 
 ## Fitur Utama
 
-- **Dashboard Real-Time:** Menampilkan waktu, aktivitas terakhir, distribusi aktivitas, timeline, dan data sensor.
-- **Profil Welder:** Informasi detail welder seperti nama, email, nomor telepon, keahlian, pengalaman, dan sertifikasi.
-- **Prediksi Aktivitas:** Menggunakan pipeline prediksi untuk menampilkan aktivitas terbaru welder.
-- **API:** Backend menggunakan Django REST Framework untuk menyediakan data ke frontend.
+- Dashboard real-time
+- Profil welder
+- Prediksi aktivitas
+- API backend (Django REST Framework)
+- Support Progressive Web App (PWA)
+- Bisa dijalankan cukup klik 2x (run_dashboard.exe)
 
 ## Struktur Proyek
 
 ```
-welder_monitoring/
-├── welder_dashboard/
-│   ├── dashboard/
-│   │   ├── static/
-│   │   │   └── js/
-│   │   │       └── dashboard.js
-│   │   ├── templates/
-│   │   │   └── dashboard/
-│   │   │       └── index.html
-│   │   ├── views.py
-│   │   ├── models.py
-│   │   └── serializers.py
-│   └── ...
-├── requirements.txt
-└── README.md
+web_app/
+├── venv310/                # Virtual environment (Python 3.10)
+└── welder_monitoring/
+    ├── welder_dashboard/
+    │   ├── dashboard/
+    │   │   ├── static/
+    │   │   │   ├── manifest.json
+    │   │   │   ├── service-worker.js
+    │   │   │   └── icons/
+    │   │   └── templates/
+    │   │       └── dashboard/
+    │   ├── manage.py
+    │   └── ...
+    ├── run_dashboard.py
+    └── requirements.txt
 ```
 
-## Teknologi yang Digunakan
-
-- **Python 3.x** (backend dan integrasi model)  
-- **TensorFlow / scikit-learn** (klasifikasi aktivitas)  
-- **Django/Flask** (backend web)  
-- **WebSocket** untuk komunikasi real-time  
-- **HTML, CSS, JavaScript** untuk dashboard frontend 
-
-## Prasyarat
-
-Sebelum menjalankan proyek, pastikan sudah menginstal:
-
-- Python ≥ 3.8  
-- `pip` (package manager Python)  
-- Virtual Environment (`venv`)  
-- Browser modern (Chrome/Firefox/Edge)  
-- Hardware sensor (IMU GY-85, ESP32)
-
-## Instalasi & Setup Lokal
+## Cara Instalasi & Menjalankan Aplikasi
 
 ### 1. Clone Repository
 
@@ -56,47 +40,62 @@ git clone https://github.com/username/welder_monitoring.git
 cd welder_monitoring
 ```
 
-### 2. Buat Virtual Environment
-
-Disarankan menggunakan virtual environment agar dependensi terisolasi.
+### 2. Buat Virtual Environment (Python 3.10)
 
 ```sh
-python -m venv venv
+cd .. # ke folder web_app
+python -m venv venv310
 ```
 
-Aktifkan virtual environment:
+### 3. Aktifkan Virtual Environment
 
 - **Windows:**
   ```sh
-  venv\Scripts\activate
+  venv310\Scripts\activate
   ```
 - **Linux/MacOS:**
   ```sh
-  source venv/bin/activate
+  source venv310/bin/activate
   ```
 
-### 3. Install Dependencies
+### 4. Install Dependencies
 
 ```sh
+cd welder_monitoring
 pip install -r requirements.txt
 ```
 
-### 4. Migrasi Database
+### 5. Build File Otomatis (run_dashboard.exe) dengan PyInstaller
 
 ```sh
-python manage.py migrate
+pip install pyinstaller
+pyinstaller --onefile run_dashboard.py
 ```
 
-### 5. Jalankan Server
+- Hasilnya ada di folder `dist/run_dashboard.exe`
 
-```sh
-python manage.py runserver
-```
+### 6. Jalankan Aplikasi
 
-Akses dashboard di [http://localhost:8000/](http://localhost:8000/).
+- Cukup klik 2x `dist/run_dashboard.exe` untuk menjalankan server Django.
+- Server akan berjalan di `http://localhost:8000/`
 
-## Kontribusi
+### 7. Install PWA di Browser
 
-Silakan fork repo ini dan buat pull request untuk kontribusi. Untuk bug atau saran, silakan buat issue di GitHub.
+- Buka `http://localhost:8000/` di Chrome/Edge.
+- Klik tombol "Install App" di pojok kanan bawah atau ikon install di address bar.
+- Setelah terinstall, aplikasi bisa dibuka dari desktop/start menu seperti aplikasi native.
+
+### 8. Penggunaan Selanjutnya
+
+- Untuk menjalankan aplikasi, cukup klik 2x `run_dashboard.exe` lalu buka aplikasi PWA dari desktop/start menu.
+- Tidak perlu buka terminal lagi.
+
+## Catatan Penting
+
+- Pastikan folder `venv310` ada di `web_app` (bukan di dalam folder proyek).
+- Jika ingin rebuild exe, hapus folder `build/` dan `dist/` lalu ulangi langkah PyInstaller.
+- Jika ada error path, pastikan struktur folder sesuai contoh di atas.
 
 ---
+
+**Selamat menggunakan Welder Monitoring Dashboard!**
