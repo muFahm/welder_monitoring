@@ -8,7 +8,6 @@ def run_prediction_on_new_record(sender, instance, created, **kwargs):
     if not created:
         return  # Hanya proses kalau record baru dibuat
 
-    # Cek apakah sudah ada 25 record terbaru → kalau ya, lakukan prediksi
     result = predict_latest_activity()
     if result:
         print(f"[Prediction] New prediction saved: {result}")

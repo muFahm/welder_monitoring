@@ -1,12 +1,7 @@
 // dashboard.js
 
-alert("âœ… dashboard.js loaded!");
 
 console.log("âœ… dashboard.js loaded to console!");
-
-
-
-
 
 // ==================== CLOCK ====================
 
@@ -92,9 +87,7 @@ async function updateActivityLabel(welderId = 1) {
 
     if (!data) return;
 
-    document.getElementById("activity-label").textContent =
-
-      `${data.predicted_class} (${(data.confidence * 100).toFixed(1)}%)`;
+    document.getElementById("activity-label").textContent = data.predicted_class;
 
     } catch (err) {
 
